@@ -17,3 +17,4 @@ if(WITH_CLANG_TIDY AND NOT MSVC)
 endif()
 
 add_subdirectory(blender)
+add_subdirectory(../../stroker_pyd stroker_pyd)
