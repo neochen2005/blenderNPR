@@ -1409,6 +1409,14 @@ void MOD_lineart_chain_find_silhouette_backdrop_objects(LineartData *ld)
       }
       ec.silhouette_backdrop = static_cast<Object *>(eln->object_ref);
     }
+    if (ec.silhouette_id == ec.silhouette_id_backdrop &&
+        (ec.silhouette_id != 0 && ec.silhouette_id_backdrop != 0))
+    {
+
+      for (LineartEdgeChainItem &eci : ec.chain) {
+        eci.is_silhouette = true;
+      }
+    }
   }
 }
 
