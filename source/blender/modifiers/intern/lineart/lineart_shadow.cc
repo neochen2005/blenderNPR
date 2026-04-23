@@ -940,20 +940,16 @@ static void lineart_shadow_cast(LineartData *ld, bool transform_edge_cuts, bool 
                                               global_2,
                                               &facing_light))
         {
-          if ((tri->base.silhouette_id == sedge->e_ref->silhouette_id) &&
-              (tri->base.silhouette_id != 0))
-          {
-            lineart_shadow_edge_cut(ld,
-                                    sedge,
-                                    at_1,
-                                    at_2,
-                                    global_1,
-                                    global_2,
-                                    fb_co_1,
-                                    fb_co_2,
-                                    facing_light,
-                                    tri->base.target_reference);
-          }
+          lineart_shadow_edge_cut(ld,
+                                  sedge,
+                                  at_1,
+                                  at_2,
+                                  global_1,
+                                  global_2,
+                                  fb_co_1,
+                                  fb_co_2,
+                                  facing_light,
+                                  tri->base.target_reference);
         }
       }
       LRT_EDGE_BA_MARCHING_NEXT(sedge->fbc1, sedge->fbc2);

@@ -69,7 +69,7 @@ struct LineartTriangle {
   uint8_t intersection_mask;
   uint8_t mat_occlusion;
   uint8_t flags; /* #eLineartTriangleFlags */
-  uint8_t silhouette_id;
+
   /* target_reference = (obi->obindex | triangle_index) */
   /*        higher 12 bits-------^         ^-----index in object, lower 20 bits */
   uint32_t target_reference;
@@ -218,7 +218,6 @@ struct LineartEdge {
    * another bit in flags to be able to show the difference.
    */
   Object *object_ref;
-  uint8_t silhouette_id;
 };
 
 struct LineartEdgeChain {
@@ -246,9 +245,6 @@ struct LineartEdgeChain {
 
   Object *object_ref;
   Object *silhouette_backdrop;
-
-  uint8_t silhouette_id;
-  uint8_t silhouette_id_backdrop;
 };
 
 struct LineartEdgeChainItem {
@@ -264,11 +260,6 @@ struct LineartEdgeChainItem {
   uint8_t intersection_mask;
   uint32_t shadow_mask_bits;
   size_t index;
-
-  size_t attr_sample_index[3];
-  bool facemark_filtered;
-  bool is_silhouette;
-  uint8_t silhouette_id;
 };
 
 struct LineartChainRegisterEntry {
