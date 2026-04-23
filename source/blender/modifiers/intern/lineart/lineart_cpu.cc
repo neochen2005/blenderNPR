@@ -5491,19 +5491,23 @@ void MOD_lineart_gpencil_generate_v3(const LineartCache *cache,
     Mesh *src_mesh = nullptr;
     MutableSpan<MDeformVert> dv = new_curves.deform_verts_for_write();
     int target_defgroup = find_target_defgroup(vgname);
-    if (source_vgname) {
-      Object *eval_ob = DEG_get_evaluated(depsgraph, cwi.chain->object_ref);
-      if (eval_ob && eval_ob->type == OB_MESH) {
-        src_mesh = BKE_object_get_evaluated_mesh(eval_ob);
+
+    VArray<float3> color;
+    VArray<float> thickness;
+
+    Object *eval_ob = DEG_get_evaluated(depsgraph, cwi.chain->object_ref);
+    if (eval_ob && eval_ob->type == OB_MESH) {
+      src_mesh = BKE_object_get_evaluated_mesh(eval_ob);
+      if (source_vgname) {
         src_dvert = src_mesh->deform_verts();
       }
-    }
 
-    const AttributeAccessor attributes = src_mesh->attributes();
-    const VArray<float3> color = *attributes.lookup_or_default<float3>(
-        "lineart_color", AttrDomain::Point, {0, 0, 0});
-    const VArray<float> thickness = *attributes.lookup_or_default<float>(
-        "lineart_thickness", AttrDomain::Point, 0);
+      const AttributeAccessor attributes = src_mesh->attributes();
+      color = *attributes.lookup_or_default<float3>(
+          "lineart_color", AttrDomain::Point, {0, 0, 0});
+      thickness = *attributes.lookup_or_default<float>(
+          "lineart_thickness", AttrDomain::Point, 0);
+    }
 
     if ((!skip_weight_transfer) && (!src_dvert.is_empty())) {
       const ListBaseT<bDeformGroup> *deflist = &src_mesh->vertex_group_names;
@@ -5576,9 +5580,12 @@ void MOD_lineart_gpencil_generate_v3(const LineartCache *cache,
 
       const int64_t vindex = eci.index - cwi.chain->index_offset;
 
-      if ((vindex < src_mesh->verts_num) && (src_mesh != nullptr)) {
-        point_color.span[point_i] = color[vindex];
-        point_thickness.span[point_i] = thickness[vindex];
+      if (src_mesh != nullptr)
+      {
+        if (vindex < src_mesh->verts_num) {
+          point_color.span[point_i] = color[vindex];
+          point_thickness.span[point_i] = thickness[vindex];
+        }
       }
 
       if (!src_to_dst_defgroup.is_empty()) {
