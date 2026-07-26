@@ -503,7 +503,7 @@ void Light::sync(ShadowModule &shadows,
   this->filter_radius = la->shadow_filter_radius;
   this->shadow_jitter = (la->mode & LA_SHADOW_JITTER) != 0;
   this->lightgroup_id = max_ii(lightgroup_id, 0);
-  this->shadow_map_scale = max_ff(la->shadow_map_scale, 0.0001f);
+  this->shadow_map_scale = 1.0f;
   this->visible_camera = (visibility_flag & OB_HIDE_CAMERA) == 0;
 
   if (la->mode & LA_SHADOW) {

@@ -77,12 +77,7 @@ void ShadowTileMap::sync_orthographic(const float4x4 &object_mat_,
   light_type = eLightType::LIGHT_SUN;
   shadow_set_membership = shadow_set_membership_;
 
-    /* If the shadow map scale changed, mark the tilemap dirty so it gets re-generated.
-   * This mirrors the behaviour when the light direction / object matrix changes. */
-  if (shadow_map_scale != shadow_map_scale_) {
-    set_dirty();
-  }
-  shadow_map_scale = shadow_map_scale_;
+  shadow_map_scale = 1.0f;
 
   grid_shift = origin_offset - grid_offset;
   grid_offset = origin_offset;
