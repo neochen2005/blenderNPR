@@ -456,10 +456,9 @@ ShadowDirectional::LevelSpan ShadowDirectional::cascade_level_range(const Light 
   float min_diagonal_tilemap_size = finite_or_default(cam_data.screen_diagonal_length, 1.0f);
 
   if (camera.is_perspective()) {
-    /* Use the far plane diagonal if using perspective. */
-    const float clip_near = std::max(finite_or_default(cam_data.clip_near, 0.01f), 0.01f);
-    const float clip_far = std::max(finite_or_default(cam_data.clip_far, clip_near), clip_near);
-    min_diagonal_tilemap_size *= clip_far / clip_near;
+    /* For perspective cascade distribution, use screen diagonal at unit depth.
+     * No far-plane scaling: tilemaps are tiled along the frustum depth,
+     * each covering the viewport width at its location. */
   }
 
   /* TODO(fclem): Zoomed in camera can have very small diagonal size which will then result in
@@ -711,10 +710,28 @@ void ShadowDirectional::end_sync(Light &light, const Camera &camera)
   light.clip_far = int(0xFF7FFFFFu ^ 0x7FFFFFFFu); /* floatBitsToOrderedInt(-FLT_MAX) */
 
   if (directional_distribution_type_get(camera) == SHADOW_PROJECTION_CASCADE) {
+    printf("[SHADOW] === CASCADE  levels=[%d..%d]  count=%d  per_coverage=%.2f  tilemap_index=%d\n",
+           levels_.lod_min, levels_.lod_max, levels_.size(),
+           double(ShadowDirectional::coverage_get(levels_.lod_min)),
+           light.tilemap_index);
     cascade_tilemaps_distribution(light, camera);
+    for (int i : IndexRange(levels_.size())) {
+      ShadowTileMap &tm = *tilemaps_[i];
+      printf("  tilemap[%d]  level=%d  half_size=%.3f  center=(%.3f,%.3f)\n",
+             i, tm.level, double(tm.half_size), double(tm.center_offset.x), double(tm.center_offset.y));
+    }
   }
   else {
+    printf("[SHADOW] === CLIPMAP  levels=[%d..%d]  count=%d  focus_dist=%.1f  focus_blend=%.2f"
+           "  tilemap_index=%d\n",
+           levels_.lod_min, levels_.lod_max, levels_.size(),
+           double(light.sun().focus_distance), double(light.sun().focus_blend), light.tilemap_index);
     clipmap_tilemaps_distribution(light, camera);
+    for (int i : IndexRange(levels_.size())) {
+      ShadowTileMap &tm = *tilemaps_[i];
+      printf("  tilemap[%d]  level=%d  half_size=%.3f  center=(%.3f,%.3f)\n",
+             i, tm.level, double(tm.half_size), double(tm.center_offset.x), double(tm.center_offset.y));
+    }
   }
 }
 
