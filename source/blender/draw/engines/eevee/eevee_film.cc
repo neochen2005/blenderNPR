@@ -908,6 +908,14 @@ void Film::update_sample_table()
   /* Offset in render target pixels. */
   data_.subpixel_offset = pixel_jitter_get();
 
+  /* When temporal history is inactive (first render sample, or viewport reset),
+   * the subpixel jitter bias won't be averaged out over time. Force a symmetric
+   * sampling pattern to prevent a consistent 1-pixel spatial offset in all
+   * channels (depth, normal, color) caused by an asymmetric filter kernel. */
+  if (!use_reprojection_ && data_.use_history == 0) {
+    data_.subpixel_offset = float2(0.0f);
+  }
+
   int filter_radius_ceil = ceilf(data_.filter_radius);
   float filter_radius_sqr = square_f(data_.filter_radius);
 
