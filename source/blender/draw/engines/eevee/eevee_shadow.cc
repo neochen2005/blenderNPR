@@ -550,18 +550,17 @@ ShadowDirectional::LevelSpan ShadowDirectional::clipmap_level_range(const Camera
 
   const CameraData &cam_data = cam.data_get();
   /* Covers the closest points of the view. */
-  int min_level = max_ii(0, floor(log2(max_ff(cam_data.clip_near, 1e-8f))));
+  int min_level = floor(log2(max_ff(cam_data.clip_near, 1e-8f)));
   /* Covers the farthest points of the view. */
   int max_level = ceil(log2(cam.bound_radius() + distance(cam.bound_center(), cam.position())));
 
-  /* We actually need to cover a bit more because of clipmap origin snapping. */
-  max_level = max(min_level, max_level) + 1;
+  max_level = max_ii(min_level, max_level);
   LevelSpan span{min_level, max_level};
-  /* 32 to be able to pack offset into a single int2.
-   * The maximum level count is bounded by the mantissa of a 32bit float. */
+
   const int max_tilemap_per_shadows = 24;
   if (span.size() > max_tilemap_per_shadows) {
-    /* Keep the coarsest levels to preserve wide coverage when we hit the tile-map budget. */
+    /* Budget exceeded: drop the smallest levels first, keeping wide coverage intact.
+     * This ensures distant shadows are never lost even at extreme view distances. */
     span.lod_min = span.lod_max - (max_tilemap_per_shadows - 1);
   }
 

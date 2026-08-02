@@ -827,10 +827,6 @@ static bool lineart_shadow_cast_onto_triangle(LineartData *ld,
     mul_v3db_db(fbc1, 1.0f / fbc1[3]);
     mul_v3db_db(fbc2, 1.0f / fbc2[3]);
   }
-  fbc1[0] -= ld->conf.shift_x * 2;
-  fbc1[1] -= ld->conf.shift_y * 2;
-  fbc2[0] -= ld->conf.shift_x * 2;
-  fbc2[1] -= ld->conf.shift_y * 2;
 
   int use = (fabs(LFBC[0] - RFBC[0]) > fabs(LFBC[1] - RFBC[1])) ? 0 : 1;
   double at1 = ratiod(LFBC[use], RFBC[use], fbc1[use]);
@@ -944,6 +940,9 @@ static void lineart_shadow_cast(LineartData *ld, bool transform_edge_cuts, bool 
                                               global_2,
                                               &facing_light))
         {
+          if ((tri->base.silhouette_id == sedge->e_ref->silhouette_id) &&
+              (tri->base.silhouette_id != 0))
+          {
           lineart_shadow_edge_cut(ld,
                                   sedge,
                                   at_1,
@@ -954,6 +953,7 @@ static void lineart_shadow_cast(LineartData *ld, bool transform_edge_cuts, bool 
                                   fb_co_2,
                                   facing_light,
                                   tri->base.target_reference);
+        }
         }
       }
       LRT_EDGE_BA_MARCHING_NEXT(sedge->fbc1, sedge->fbc2);
@@ -1268,7 +1268,7 @@ bool lineart_main_try_generate_shadow_v3(
                                scene,
                                nullptr,
                                ld,
-                               int(lmd->flags) & int(MOD_LINEART_ALLOW_DUPLI_OBJECTS),
+                               lmd->flags & MOD_LINEART_ALLOW_DUPLI_OBJECTS,
                                true,
                                nullptr,
                                included_objects);
@@ -1361,8 +1361,6 @@ static void lineart_shadow_transform_task(void *__restrict userdata,
   LineartData *ld = data->ld;
   LineartVert *v = &data->v[element_index];
   mul_v4_m4v3_db(v->fbcoord, ld->conf.view_projection, v->gloc);
-  v->fbcoord[0] -= ld->conf.shift_x * 2;
-  v->fbcoord[1] -= ld->conf.shift_y * 2;
 }
 
 static void lineart_shadow_finalize_shadow_edges_task(void *__restrict userdata,
@@ -1467,8 +1465,6 @@ void lineart_main_make_enclosed_shapes(LineartData *ld, LineartData *shadow_ld)
     if (shadow_ld->conf.cam_is_persp) {
       mul_v3db_db(v[i].fbcoord, (1 / v[i].fbcoord[3]));
     }
-    v[i].fbcoord[0] -= shadow_ld->conf.shift_x * 2;
-    v[i].fbcoord[1] -= shadow_ld->conf.shift_y * 2;
   }
 
   lineart_finalize_object_edge_array_reserve(&shadow_ld->pending_edges,

@@ -69,6 +69,7 @@ struct LineartTriangle {
   uint8_t intersection_mask;
   uint8_t mat_occlusion;
   uint8_t flags; /* #eLineartTriangleFlags */
+  uint8_t silhouette_id;
 
   /* target_reference = (obi->obindex | triangle_index) */
   /*        higher 12 bits-------^         ^-----index in object, lower 20 bits */
@@ -218,6 +219,7 @@ struct LineartEdge {
    * another bit in flags to be able to show the difference.
    */
   Object *object_ref;
+  uint8_t silhouette_id;
 };
 
 struct LineartEdgeChain {
@@ -245,6 +247,9 @@ struct LineartEdgeChain {
 
   Object *object_ref;
   Object *silhouette_backdrop;
+
+  uint8_t silhouette_id;
+  uint8_t silhouette_id_backdrop;
 };
 
 struct LineartEdgeChainItem {
@@ -260,6 +265,10 @@ struct LineartEdgeChainItem {
   uint8_t intersection_mask;
   uint32_t shadow_mask_bits;
   size_t index;
+  size_t attr_sample_index[3];
+  bool facemark_filtered;
+  bool is_silhouette;
+  uint8_t silhouette_id;
 };
 
 struct LineartChainRegisterEntry {
@@ -935,28 +944,27 @@ namespace bke::greasepencil {
 class Drawing;
 }
 void MOD_lineart_gpencil_generate_v3(const LineartCache *cache,
-                                     const float4x4 &mat,
+                                     const float4x4 &inverse_mat,
                                      Depsgraph *depsgraph,
                                      bke::greasepencil::Drawing &drawing,
-                                     int8_t source_type,
+                                     const int8_t source_type,
                                      Object *source_object,
                                      Collection *source_collection,
-                                     int level_start,
-                                     int level_end,
-                                     int mat_nr,
-                                     int16_t edge_types,
-                                     uchar mask_switches,
-                                     uchar material_mask_bits,
-                                     uchar intersection_mask,
-                                     float thickness,
-                                     float opacity,
-                                     const bool fill_strokes,
-                                     uchar shadow_selection,
-                                     uchar silhouette_mode,
+                                     const int level_start,
+                                     const int level_end,
+                                     const int mat_nr,
+                                     const int16_t edge_types,
+                                     const uchar mask_switches,
+                                     const uchar material_mask_bits,
+                                     const uchar intersection_mask,
+                                     const float thickness,
+                                     const float opacity,
+                                     const uchar shadow_selection,
+                                     const uchar silhouette_mode,
                                      const char *source_vgname,
                                      const char *vgname,
-                                     int modifier_flags,
-                                     int modifier_calculation_flags);
+                                     const int modifier_flags,
+                                     const int modifier_calculation_flags);
 
 /**
  * Length is in image space.
